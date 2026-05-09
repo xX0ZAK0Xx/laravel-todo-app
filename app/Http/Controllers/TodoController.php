@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Todo;
+use App\Services\TodoService;
 use Illuminate\Http\JsonResponse;
-use App\Repositories\Interfaces\TodoRepositoryInterface;
 use App\Http\Requests\StoreTodoRequest;
 use App\Http\Requests\UpdateTodoRequest;
 use App\Http\Resources\TodoResource;
@@ -12,53 +12,43 @@ use Illuminate\Http\Request;
 
 class TodoController extends Controller
 {
-    public function __construct(private TodoRepositoryInterface $todoRepository)
-    {}
+    // public function __construct(private TodoRepositoryInterface $todoRepository) {}
+    public function __construct(private TodoService $todoService) {}
+
     //GET /api/todos -> Get all todos
     public function index(Request $request): JsonResponse{
-        // $todos = Todo::all();
-        $todos = $this->todoRepository->getAllForUser($request->user()->id);
-        // return response()->json($todos);
+        $todos = $this->todoService->getAllForUser($request->user());
         return TodoResource::collection($todos)->additional(['meta' => ['total' => $todos->count()]])->response();
     }
 
     //POST /api/todos -> Create a new todo
     public function store(StoreTodoRequest $request): JsonResponse{
-        // $todo = Todo::create([
-        //     'title' => $request->input('title'),
-        //     'is_done' => false,
-        // ]);
-        // $todo = $this->todoRepository->create($request->validated());
-        $todo = $this->todoRepository->create(
-            array_merge(
-                $request->validated(),
-                ['user_id' => $request->user()->id]
-            )
-        );
-        // return response()->json($todo, 201);
+        $todo = $this->todoService->create($request->user(), $request->validated());
         return response()->json(new TodoResource($todo), 201);
     }
 
     //GET /api/todos/{id} -> Get a specific todo
-    public function show(Todo $todo): JsonResponse{
-        // return response()->json($todo);
-        $todo = $this->todoRepository->findById($todo->id);
-        // return response()->json($todo);
+    public function show(Request $request, int $id): JsonResponse{
+        $todo = $this->todoService->getByIdForUser($request->user(), $id);
         return response()->json(new TodoResource($todo));
     }
 
     //PUT /api/todos/{id} -> Update a specific todo
-    public function update(UpdateTodoRequest $request, Todo $todo): JsonResponse{
-        // $todo-> update($request->only(['title', 'is_done']));
-        $todo = $this->todoRepository->update($todo, $request->validated());
-        // return response()->json($todo);
+    public function update(UpdateTodoRequest $request, int $id): JsonResponse{
+        $todo = $this->todoService->update($request->user(), $id, $request->validated());
+        return response()->json(new TodoResource($todo));
+    }
+
+    //PATCH /api/todos/{id}/complete -> Mark a specific todo as complete
+    public function complete(Request $request, int $id): JsonResponse
+    {
+        $todo = $this->todoService->completeTodo($request->user(), $id);
         return response()->json(new TodoResource($todo));
     }
 
     //DELETE /api/todos/{id} -> Delete a specific todo
-    public function destroy(Todo $todo): JsonResponse{
-        // $todo->delete();
-        $this->todoRepository->delete($todo);
+    public function destroy(Request $request, int $id): JsonResponse{
+        $this->todoService->delete($request->user(), $id);
         return response()->json(null, 204);
     }
 }

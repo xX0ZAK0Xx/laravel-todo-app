@@ -24,8 +24,8 @@ class UpdateTodoRequest extends FormRequest
     {
         return [
             'title' => ['sometimes','string','min:1','max:255'],
-            'is_done' => ['sometimes','boolean'],
             'priority' => ['sometimes','integer','between:1,5'],
+            'due_date' => ['sometimes','date','after:now'],
         ];
     }
 
@@ -35,9 +35,10 @@ class UpdateTodoRequest extends FormRequest
             'title.string' => 'The title must be a string.',
             'title.min' => 'The title must be at least :min characters.',
             'title.max' => 'The title may not be greater than :max characters.',
-            'is_done.boolean' => 'The is_done field must be true or false.',
             'priority.integer' => 'The priority must be an integer.',
             'priority.between' => 'The priority must be between :min and :max.',
+            'due_date.date' => 'The due date must be a valid date.',
+            'due_date.after' => 'The due date must be a date after now.',
         ];
     }
 }

@@ -11,6 +11,11 @@ class TodoRepository implements TodoRepositoryInterface
         return Todo::where('user_id', $userId)->orderBy('created_at', 'desc')->get();
     }
 
+    public function countActiveForUser(int $userId): int
+    {
+        return Todo::where('user_id', $userId)->where('is_done', false)->count();
+    }
+
     public function findById(int $id): Todo
     {
         return Todo::findOrFail($id);

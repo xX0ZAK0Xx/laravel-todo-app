@@ -15,4 +15,5 @@ Route::prefix("auth")->group(function(){
 
 Route::middleware('auth:sanctum')->group(function(){
     Route::apiResource('todos', TodoController::class);
+    Route::patch('todos/{id}/complete', [TodoController::class, 'complete']);
 });
