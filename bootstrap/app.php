@@ -2,9 +2,11 @@
 
 use App\Http\Middleware\RoleMiddleware;
 use App\Providers\EventServiceProvider;
+use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -35,13 +37,14 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role'=> RoleMiddleware::class
         ]);
+        Authenticate::redirectUsing(fn (Request $request) => null);
     })
     ->withProviders([
         EventServiceProvider::class,
     ])
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function(\Throwable $e, Request $request){
-            if($request->expectsJson()){
+            if($request->expectsJson() || $request->is('api/*')){
                 // ValidationException 422
                 if($e instanceof \Illuminate\Validation\ValidationException) {
                     return response()->json([
