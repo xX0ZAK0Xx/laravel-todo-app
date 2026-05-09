@@ -5,7 +5,7 @@ use App\Http\Controllers\Admin\UserController as AdminUserController;
 use Illuminate\Support\Facades\Route;
 
 // User management
-Route::apiResource('users', AdminUserController::class);
+Route::apiResource('users', AdminUserController::class)->only(['index', 'show', 'destroy']);
 
 // Statistics
 Route::get('stats', [StatsController::class, 'index']);

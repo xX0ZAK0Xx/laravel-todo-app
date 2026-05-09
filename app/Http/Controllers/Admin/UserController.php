@@ -13,9 +13,10 @@ class UserController extends Controller
     public function __construct(private UserService $userService) {}
 
     // GET api/v1/admin/users
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $users = $this->userService->getAll();
+        $perPage = (int) $request->query('per_page', 10);
+        $users = $this->userService->getAll($perPage);
         return $this->success([
             'data' => UserResource::collection($users),
             'meta' => [

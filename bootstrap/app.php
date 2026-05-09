@@ -52,13 +52,6 @@ return Application::configure(basePath: dirname(__DIR__))
                         'errors' => $e->errors(),
                     ], 422);
                 }
-                // ModelNotFoundException 404
-                if($e instanceof \Illuminate\Database\Eloquent\ModelNotFoundException) {
-                    $model = class_basename($e->getModel());
-                    return response()->json([
-                        'message' => "$model not found",
-                    ], 404);
-                }
                 // Auth exceptions 401
                 if($e instanceof \Illuminate\Auth\AuthenticationException) {
                     return response()->json([
@@ -71,8 +64,17 @@ return Application::configure(basePath: dirname(__DIR__))
                         'message' => 'Forbidden',
                     ], 403);
                 }
-                // Route not found 404
+                // Route/Model not found 404
+                // Note: Laravel's prepareException() converts ModelNotFoundException to
+                // NotFoundHttpException before render callbacks run, so we check getPrevious().
                 if($e instanceof \Symfony\Component\HttpKernel\Exception\NotFoundHttpException) {
+                    $previous = $e->getPrevious();
+                    if ($previous instanceof \Illuminate\Database\Eloquent\ModelNotFoundException) {
+                        $model = class_basename($previous->getModel());
+                        return response()->json([
+                            'message' => "$model not found",
+                        ], 404);
+                    }
                     return response()->json([
                         'message' => 'Route not found',
                     ], 404);
