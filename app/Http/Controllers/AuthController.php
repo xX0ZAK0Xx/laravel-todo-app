@@ -5,65 +5,40 @@ namespace App\Http\Controllers;
 use App\Http\Requests\SignInRequest;
 use App\Http\Requests\StoreRegisterRequest;
 use App\Http\Resources\UserResource;
-use App\Repositories\Interfaces\AuthRepositoryInterface;
-use Illuminate\Http\Request;
+use App\Services\AuthService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Http\Request;
 
 class AuthController extends Controller
 {
-    public function __construct(private AuthRepositoryInterface $authRepository)
-    {}
+    public function __construct(private AuthService $authService) {}
+
     public function register(StoreRegisterRequest $request): JsonResponse
     {
-        $validatedData = $request->validated();
-        $newUser = $this->authRepository->create($validatedData);
-        $token = $newUser->createToken('auth_token')->plainTextToken;
-        return response()->json(
-            [
-                'user' => new UserResource($newUser),
-                'access_token' => $token
-            ],
-            201
-        );
+        $result = $this->authService->register($request->validated());
+        return $this->created([
+            'user' => new UserResource($result['user']),
+            'access_token' => $result['token'],
+        ], 'User registered successfully');
     }
 
     public function signIn(SignInRequest $request): JsonResponse
     {
-        $validatedData = $request->validated();
-        $user = $this->authRepository->getAll()->where('email', $validatedData['email'])->first();
-
-        // Hash::check is used to compare the provided password with the hashed password stored in the database.
-        if(!$user || ! Hash::check($validatedData['password'], $user->password)){
-            return response()->json(['message' => 'Invalid credentials'], 401);
-        }
-        // delete existing tokens for single session
-        $user->tokens()->delete();
-        // create new token
-        $token = $user->createToken('auth_token')->plainTextToken;
-        return response()->json(
-            [
-                'user' => new UserResource($user),
-                'access_token' => $token
-            ],
-            200
-        );
+        $result = $this->authService->signIn($request->validated());
+        return $this->success([
+            'user' => new UserResource($result['user']),
+            'access_token' => $result['token'],
+        ], 'Signed in successfully');
     }
 
     public function signOut(Request $request): JsonResponse
     {
-        // Delete the user token
-        $token = $request->user()?->currentAccessToken();
-
-        $token?->delete();
-
-        return response()->json([
-            'message' => 'Logged out successfully'
-        ]);
+        $this->authService->signOut($request->user());
+        return $this->success(null, 'Logged out successfully');
     }
 
     public function me(Request $request): JsonResponse
     {
-        return response()->json(new UserResource($request->user()));
+        return $this->success(new UserResource($request->user()), 'User retrieved successfully');
     }
 }

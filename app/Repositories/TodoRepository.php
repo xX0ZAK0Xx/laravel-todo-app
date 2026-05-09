@@ -36,4 +36,29 @@ class TodoRepository implements TodoRepositoryInterface
     {
         return (bool) Todo::destroy($todo->getKey());
     }
+
+    public function count(): int
+    {
+        return Todo::count();
+    }
+
+    public function countCompleted(): int
+    {
+        return Todo::where('is_done', true)->count();
+    }
+
+    public function countActive(): int
+    {
+        return Todo::where('is_done', false)->count();
+    }
+
+    public function completionsPerDay(int $days): \Illuminate\Support\Collection
+    {
+        return Todo::where('is_done', true)
+            ->where('completed_at', '>=', now()->subDays($days))
+            ->selectRaw('DATE(completed_at) as date, COUNT(*) as count')
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
+    }
 }
