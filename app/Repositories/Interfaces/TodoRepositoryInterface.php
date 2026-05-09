@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Collection;
 
 interface TodoRepositoryInterface
 {
-    public function getAll(): Collection;
+    public function getAllForUser(int $userId): Collection;
     public function findById(int $id): Todo;
     public function create(array $data): Todo;
     public function update(Todo $todo, array $data): Todo;

@@ -6,9 +6,9 @@ use Illuminate\Database\Eloquent\Collection;
 
 class TodoRepository implements TodoRepositoryInterface
 {
-    public function getAll(): Collection
+    public function getAllForUser(int $userId): Collection
     {
-        return Todo::orderBy('created_at', 'desc')->get();
+        return Todo::where('user_id', $userId)->orderBy('created_at', 'desc')->get();
     }
 
     public function findById(int $id): Todo
