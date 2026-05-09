@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Events\TodoCompleted;
 use App\Exceptions\BusinessException;
 use App\Models\Todo;
 use App\Models\User;
@@ -56,6 +57,8 @@ class TodoService
         if ($todo->is_done) {
             throw new BusinessException("Todo is already completed", 400);
         }
+
+        TodoCompleted::dispatch($todo, $user);
 
         // mark todo is done and add completed_at timestamp
         return $this->repository->update($todo, [
