@@ -11,9 +11,11 @@ use Illuminate\Support\Facades\Route;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
-        web: __DIR__.'/../routes/web.php',
-        // api: __DIR__.'/../routes/api.php',
         using: function () {
+            // root status endpoint; no 'web' group since this app is
+            // stateless/API-only and needs no session or CSRF handling
+            Route::group([], base_path('routes/web.php'));
+
             // public API routes
             Route::middleware(['api'])
                 ->prefix('api/v1/public')

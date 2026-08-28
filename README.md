@@ -10,13 +10,13 @@ A feature-rich Todo application built with Laravel 12. This project demonstrates
 - User streak and statistics tracking
 - Email notifications on todo completion
 - RESTful API structure (public, user, admin routes)
+- JSON-only, API-first — no frontend build step or Node.js required
 - Database seeding with sample users and todos
 
 ## Requirements
 
 - PHP ^8.2
 - Composer
-- Node.js & npm (for frontend assets)
 - SQLite (default), MySQL, or PostgreSQL
 - [Optional] Mail server for email notifications
 
@@ -33,31 +33,21 @@ A feature-rich Todo application built with Laravel 12. This project demonstrates
 	composer install
 	```
 
-3. **Install Node dependencies:**
-	```bash
-	npm install
-	```
-
-4. **Copy and configure environment file:**
+3. **Copy and configure environment file:**
 	```bash
 	cp .env.example .env
 	```
 	- Set your database connection in `.env` (default is SQLite).
 	- Configure mail settings if you want email notifications.
 
-5. **Generate application key:**
+4. **Generate application key:**
 	```bash
 	php artisan key:generate
 	```
 
-6. **Run migrations:**
+5. **Run migrations:**
 	```bash
 	php artisan migrate
-	```
-
-7. **(Optional) Build frontend assets:**
-	```bash
-	npm run build
 	```
 
 ## Seeding the Database
@@ -79,7 +69,13 @@ Start the local development server:
 php artisan serve
 ```
 
-The app will be available at [http://localhost:8000](http://localhost:8000).
+The API will be available at [http://localhost:8000](http://localhost:8000).
+
+To also run the queue worker and log tailer alongside the server:
+
+```bash
+composer dev
+```
 
 ## Running Tests
 
@@ -106,6 +102,7 @@ vendor/bin/phpunit
 
 - Public, user, and admin endpoints are defined in `routes/api-*.php`.
 - Uses Laravel Sanctum for API authentication.
+- All responses are JSON; there are no Blade views or compiled assets.
 
 ## License
 
